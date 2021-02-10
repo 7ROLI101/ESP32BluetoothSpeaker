@@ -33,33 +33,13 @@
 // a Class D amplifier I will build on my own
 #include "driver/i2s.h"
 
+//this is the header file with all of the definitions and functions needed for general purpose 
+//bluetooth functionality
+#include "bt_main.h"
+
+
 //Tags for debugging 
 #define BT_CONTROLLER_TAG "BT_CONTROLLER"
-
-//this will be the example structure of the message that we will be using
-//it should contain a callback function, events and parameters that would allow
-//us to use the callback function within the bt_task_handler
-typedef struct
-{
-
-}bt_task_message;
-
-//this will be used for the creation of the bluetooth application task and queue
-//the queue will be used to hold messages (aka the callback functions that need to be completed) 
-//and let the dispatcher know that the message will need to be processed 
-static xQueueHandle bt_task_queue = NULL;
-//this task will contain the while loop that would receive messages from the queue, process the 
-//messages and then free any space that would need to be freed (space used by the message, for example) 
-static xTaskHandle bt_task_handle = NULL;
-
-
-//this function will be used to create a bt queue and a bt task 
-void bt_task_init()
-{
-	bt_task_queue = xQueueCreate(10, sizeof(bt_task_message));
-}
-
-
 
 void app_main()
 {
@@ -115,6 +95,36 @@ void app_main()
 		ESP_LOGI(BT_CONTROLLER_TAG,"Bluedroid was enabled successfully!\n");
 	}
 	
+	//now create an I2S instance so that we can output an I2S signal to the decoder
+	//outputting data to GPIO pin 22
+
+	static const int i2s_num = 0; // i2s port number
+
+	static const i2s_config_t i2s_config = 
+	{
+    .mode = I2S_MODE_MASTER | I2S_MODE_TX,
+    .sample_rate = 44100,
+    .bits_per_sample = 16,
+    .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
+    .communication_format = I2S_COMM_FORMAT_STAND_I2S,
+    .intr_alloc_flags = 0, // default interrupt priority
+    .dma_buf_count = 8,
+    .dma_buf_len = 64,
+    .use_apll = false
+	};
+
+	static const i2s_pin_config_t pin_config = 
+	{
+    .bck_io_num = 26,
+    .ws_io_num = 25,
+    .data_out_num = 22,
+    .data_in_num = I2S_PIN_NO_CHANGE
+	};
+   
+    i2s_driver_install(i2s_num, &i2s_config, 0, NULL);   //install and start i2s driver
+
+    i2s_set_pin(i2s_num, &pin_config);
+
 	//----------------------------------------------------------------------------------------------
 	//PART 2:Setting up the profiles (GAP, A2DP and AVRC)
 	//first start by creating a bluetooth task
