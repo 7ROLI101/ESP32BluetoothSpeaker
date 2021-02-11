@@ -129,6 +129,6 @@ void app_main()
 	//PART 2:Setting up the profiles (GAP, A2DP and AVRC)
 	//first start by creating a bluetooth task
 	bt_task_init();
-	
+	bt_profiles_set_up();
 }
 
