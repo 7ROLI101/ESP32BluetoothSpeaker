@@ -10,8 +10,17 @@
 #include "freertos/queue.h"
 #include "freertos/task.h"
 #include "esp_log.h"
-#include "driver/i2s.h"
 #include "freertos/ringbuf.h"
+//using the profiles that we need from bluetooth
+//GAP, A2DP and AVRC
+//GAP will be used to control connections and advertising in Bluetooth
+#include "esp_gap_bt_api.h"
+//using the bluetooth common device and main functions
+#include "esp_bt_main.h"
+#include "esp_bt_device.h"
+
+//tags used for debugging
+#define BT_GAP_TAG "BT_GAP"
 
 
 //this will be the type of callback function that will be used for the task handler
@@ -32,10 +41,17 @@ typedef struct
 //this function will be used to create a bt queue and a bt task 
 void bt_task_init();
 
-//this function will be used for implementing tasks
+//this function will be used for implementing tasks and passing them 
+//into the dispatcher for dispatching the messages
 void bt_task_handler();
 
+//this function would be used for setting up all of the profiles(GAP, A2DP and AVRC)
+//this will also set up all the callback functions that are necessary for the implementation
+//of the bluetooth speaker
+void bt_profiles_set_up();
 
+//this function will be used as the GAP callback function for GAP related events
+void bt_gap_callback(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t* parameter);
 
 #endif /*end of __BT_MAIN_H*/
 
